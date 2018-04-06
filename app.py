@@ -33,8 +33,10 @@ def get_username_from_id(user_id):
         'users.info',
         user=user_id
     )
-    return result['user']['name']
-
+    try:
+        return result['user']['name']
+    except:
+        return 'Slacktivate'
 
 def get_channel_name_from_id(channel_id):
     result = get_slack_client().api_call(
@@ -66,13 +68,17 @@ def handle_twitter(channel, user, message):
             ]
         }
     ])
+    try:
+        original_poster = message['user']
+    except:
+        return
     result = get_slack_client().api_call(
         'chat.postMessage',
         channel='tweetdrafts',
         as_user=False,
         text='Got a tweet suggestion by {} on {}\'s post in {}: \"{}\"'.format(
             '<@{}>'.format(user),
-            '<@{}>'.format(message['user']),
+            '<@{}>'.format(original_poster),
             '<#{}>'.format(channel),
             message['text']),
         attachments=tweet_button_action
@@ -80,13 +86,16 @@ def handle_twitter(channel, user, message):
 
 def handle_faq(channel, user, message):
     url = url_for_message(channel, message)
+    try:
+        original_poster = message['user']
+    except:
+        return
     append(app.config['DROPBOX_ACCESS_TOKEN'], 
         '# [Message from {} in #{}]({})'.format(
-            get_username_from_id(message['user']),
+            get_username_from_id(original_poster),
             get_channel_name_from_id(channel),
             url)
         + '\n\n' + message['text'])
-    print(url)
 
 def get_message_from_item(message_item):
     if message_item['type'] != 'message':
