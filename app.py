@@ -23,6 +23,22 @@ def get_slack_client():
     return SlackClient(app.config['SLACK_TOKEN'])
 
 
+def get_username_from_id(user_id):
+    result = get_slack_client().api_call(
+        'users.info',
+        user=user_id
+    )
+    return result['user']['name']
+
+
+def get_channel_name_from_id(channel_id):
+    result = get_slack_client().api_call(
+        'channels.info',
+        channel=channel_id
+    )
+    return result['channel']['name']
+
+
 def handle_twitter(channel, user, message):
     tweet_intent_url = 'https://twitter.com/intent/tweet?text={}'.format(message['text']);
     tweet_button_action = json.dumps([
@@ -41,9 +57,9 @@ def handle_twitter(channel, user, message):
         'chat.postMessage',
         channel='tweetdrafts',
         as_user=False,
-        text='Got a tweet suggestion from @{} in #{}: \"{}\"'.format(
-            user,
-            channel,
+        text='Got a tweet suggestion from {} in {}: \"{}\"'.format(
+            '<@{}>'.format(user),
+            '<#{}>'.format(channel),
             message['text']),
         attachments=tweet_button_action
     )
