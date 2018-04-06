@@ -27,9 +27,12 @@ def handle_twitter(channel, message):
     ])
     result = get_slack_client().api_call(
         'chat.postMessage',
-        channel=channel,
+        channel='tweetdrafts',
         as_user=False,
-        text='Got a tweet suggestion: \"{}\"'.format(message['text']),
+        text='Got a tweet suggestion from @{} in #{}: \"{}\"'.format(
+            'cchio',
+            channel,
+            message['text']),
         attachments=tweet_button_action
     )
     payload = {'text': message['text']}
@@ -86,7 +89,7 @@ def handle_event():
             route = EMOJI_ROUTES.get(inner_event['reaction'])
             if route:
                 message = get_message_from_item(inner_event['item'])
-                route(message_item['channel'], message)
+                route(inner_event['item']['channel'], message)
             else:
                 logging.info('Unknown emoji:', inner_event['reaction'])
             return ''
