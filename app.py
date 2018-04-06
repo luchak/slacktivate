@@ -80,7 +80,12 @@ def handle_twitter(channel, user, message):
 
 def handle_faq(channel, user, message):
     url = url_for_message(channel, message)
-    append(app.config['DROPBOX_ACCESS_TOKEN'], '# ' + url + '\n\n' + message['text'])
+    append(app.config['DROPBOX_ACCESS_TOKEN'], 
+        '# [Message from {} in #{}]({})'.format(
+            get_username_from_id(message['user']),
+            get_channel_name_from_id(channel),
+            url)
+        + '\n\n' + message['text'])
     print(url)
 
 def get_message_from_item(message_item):
@@ -112,7 +117,7 @@ EMOJI_ROUTES = {
 
 @app.route('/')
 def hello_world():
-    return 'Hello, Matt!'
+    return 'Hello, World!'
 
 
 @app.route('/event', methods=['POST'])
