@@ -2,7 +2,7 @@ from flask import Flask, Response, request
 import json
 import logging
 import requests
-import urllib
+from urllib.parse import urlencode, quote_plus
 from slackclient import SlackClient
 
 app = Flask(__name__)
@@ -12,8 +12,7 @@ def get_slack_client():
     return SlackClient(app.config['SLACK_TOKEN'])
 
 def handle_twitter(channel, message):
-    tweet_intent_url = 'https://twitter.com/intent/tweet?text={}'.format(
-        urllib.urlencode(message['text']));
+    tweet_intent_url = 'https://twitter.com/intent/tweet?text={}'.format(message['text']);
     tweet_button_action = json.dumps([
         {
             "fallback": "You are unable to choose an option",
@@ -87,7 +86,7 @@ def handle_event():
             route = EMOJI_ROUTES.get(inner_event['reaction'])
             if route:
                 message = get_message_from_item(inner_event['item'])
-                route('tweetdrafts', message)
+                route(message_item['channel'], message)
             else:
                 logging.info('Unknown emoji:', inner_event['reaction'])
             return ''
