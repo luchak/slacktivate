@@ -36,7 +36,6 @@ def handle_twitter(channel, message):
         attachments=tweet_button_action
     )
     payload = {'text': message['text']}
-    print(result)
 
 def handle_faq(channel, message):
     result = get_slack_client().api_call(
@@ -45,7 +44,6 @@ def handle_faq(channel, message):
         as_user=False,
         text='Got a FAQ suggestion: {}'.format(message['text'])
     )
-    print(result)
 
 def get_message_from_item(message_item):
     if message_item['type'] != 'message':
@@ -58,7 +56,7 @@ def get_message_from_item(message_item):
         channel=message_item['channel'],
         count=10,
         latest=timestamp + 1,
-        oldest=timestamp -1 
+        oldest=timestamp -1,
     )
 
     for message in history['messages']:
