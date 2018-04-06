@@ -8,4 +8,4 @@ from lib.paper import append
 
 title = sys.argv[1]
 body = ' '.join(sys.argv[2:])
-update(title, body)
+append(title, body)
