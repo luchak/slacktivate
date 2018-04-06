@@ -1,18 +1,17 @@
 import os
 import dropbox
 
-DROPBOX_ACCESS_TOKEN = os.environ['DROPBOX_ACCESS_TOKEN']
 DOC_ID = '1NRlljWSK3U6GaIZ7er5j'
 
 APPEND_POLICY = dropbox.paper.PaperDocUpdatePolicy('append')
 EXPORT_FORMAT = dropbox.paper.ExportFormat('markdown')
 IMPORT_FORMAT = dropbox.paper.ImportFormat('markdown')
 
-def append(content):
+def append(token, content):
   # Append a linebreak to the beginning.
   data = str.encode('<br>\n\n' + content)
 
-  dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+  dbx = dropbox.Dropbox(token)
 
   # Get basic information about the Paper document. Note: We don't actually need the
   # document contents, despite this method name. We just need the document revision

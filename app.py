@@ -10,15 +10,13 @@ from slackclient import SlackClient
 
 import db
 
-SLACK_DOMAIN = os.environ['SLACK_DOMAIN']
-
 app = Flask(__name__)
-app.config.from_pyfile('slacktivate.cfg')
+app.config.from_envvar('SLACKTIVATE_CONFIG')
 
 
 # Super hack-ish way to get a URL for a particular message
 def url_for_message(channel, message):
-    return SLACK_DOMAIN + '/archives/' + channel + '/p' + ''.join(message['ts'].split('.'))
+    return app.config['SLACK_DOMAIN'] + '/archives/' + channel + '/p' + ''.join(message['ts'].split('.'))
 
 def get_slack_client():
     return SlackClient(app.config['SLACK_TOKEN'])
@@ -29,6 +27,22 @@ def decode_slack_encoding(text):
     ret = '<'.join(ret.split('&lt;'))
     ret = '&'.join(ret.split('&amp;'))
     return ret
+
+def get_username_from_id(user_id):
+    result = get_slack_client().api_call(
+        'users.info',
+        user=user_id
+    )
+    return result['user']['name']
+
+
+def get_channel_name_from_id(channel_id):
+    result = get_slack_client().api_call(
+        'channels.info',
+        channel=channel_id
+    )
+    return result['channel']['name']
+
 
 def handle_twitter(channel, user, message):
     message_text = decode_slack_encoding(message['text'])
@@ -51,9 +65,9 @@ def handle_twitter(channel, user, message):
         'chat.postMessage',
         channel='tweetdrafts',
         as_user=False,
-        text='Got a tweet suggestion from @{} in #{}: \"{}\"'.format(
-            user,
-            channel,
+        text='Got a tweet suggestion from {} in {}: \"{}\"'.format(
+            '<@{}>'.format(user),
+            '<#{}>'.format(channel),
             message['text']),
         attachments=tweet_button_action
     )
@@ -61,7 +75,7 @@ def handle_twitter(channel, user, message):
 def handle_faq(channel, user, message):
     #message_text = decode_slack_encoding(message['text'])
     url = url_for_message(channel, message)
-    append('# ' + url + '\n\n' + message['text'])
+    append(app.config['DROPBOX_ACCESS_TOKEN'], '# ' + url + '\n\n' + message['text'])
     print(url)
 
 def get_message_from_item(message_item):
