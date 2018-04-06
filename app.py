@@ -5,6 +5,7 @@ import logging
 import os
 import requests
 import sqlite3
+import urllib.parse
 from slackclient import SlackClient
 
 import db
@@ -22,9 +23,18 @@ def url_for_message(channel, message):
 def get_slack_client():
     return SlackClient(app.config['SLACK_TOKEN'])
 
+def decode_slack_encoding(text):
+    ret = text;
+    ret = '>'.join(ret.split('&gt;'))
+    ret = '<'.join(ret.split('&lt;'))
+    ret = '&'.join(ret.split('&amp;'))
+    return ret
 
 def handle_twitter(channel, user, message):
-    tweet_intent_url = 'https://twitter.com/intent/tweet?text={}'.format(message['text']);
+    message_text = decode_slack_encoding(message['text'])
+    tweet_intent_url = 'https://twitter.com/intent/tweet?{}'.format(
+        urllib.parse.urlencode({'text': message_text}),
+    );
     tweet_button_action = json.dumps([
         {
             "fallback": "You are unable to choose an option",
@@ -47,9 +57,9 @@ def handle_twitter(channel, user, message):
             message['text']),
         attachments=tweet_button_action
     )
-    payload = {'text': message['text']}
 
-def handle_faq(channel, message):
+def handle_faq(channel, user, message):
+    #message_text = decode_slack_encoding(message['text'])
     url = url_for_message(channel, message)
     append('# ' + url + '\n\n' + message['text'])
     print(url)
