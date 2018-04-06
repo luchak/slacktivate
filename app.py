@@ -1,6 +1,8 @@
 from flask import Flask, Response, request
+from lib.paper import append
 import json
 import logging
+import os
 import requests
 from urllib.parse import urlencode, quote_plus
 import sqlite3
@@ -9,8 +11,15 @@ from slackclient import SlackClient
 
 import db
 
+SLACK_DOMAIN = os.environ['SLACK_DOMAIN']
+
 app = Flask(__name__)
 app.config.from_pyfile('slacktivate.cfg')
+
+
+# Super hack-ish way to get a URL for a particular message
+def url_for_message(channel, message):
+    return SLACK_DOMAIN + '/archives/' + channel + '/p' + ''.join(message['ts'].split('.'))
 
 def get_slack_client():
     return SlackClient(app.config['SLACK_TOKEN'])
@@ -42,12 +51,9 @@ def handle_twitter(channel, message):
     payload = {'text': message['text']}
 
 def handle_faq(channel, message):
-    result = get_slack_client().api_call(
-        'chat.postMessage',
-        channel=channel,
-        as_user=False,
-        text='Got a FAQ suggestion: {}'.format(message['text'])
-    )
+    url = url_for_message(channel, message)
+    append('# ' + url + '\n\n' + message['text'])
+    print(url)
 
 def get_message_from_item(message_item):
     if message_item['type'] != 'message':

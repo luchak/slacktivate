@@ -7,5 +7,4 @@ import sys
 from lib.paper import append
 
 title = sys.argv[1]
-body = ' '.join(sys.argv[2:])
-append(title, body)
+append(content)

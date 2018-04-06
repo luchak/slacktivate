@@ -11,6 +11,7 @@ To get started:
     SLACK_TOKEN = "XXXXXX"
     EOF
 ```
+export SLACK_DOMAIN=https://yourdomain.slack.com
 export PORT=5000
 * `./start.sh`
 

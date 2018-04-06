@@ -8,9 +8,9 @@ APPEND_POLICY = dropbox.paper.PaperDocUpdatePolicy('append')
 EXPORT_FORMAT = dropbox.paper.ExportFormat('markdown')
 IMPORT_FORMAT = dropbox.paper.ImportFormat('markdown')
 
-def append(title, body):
-  # Convert title and body into Markdown-formatted bytes string
-  data = str.encode('<br>\n\n# ' + title + '\n\n' + body)
+def append(content):
+  # Append a linebreak to the beginning.
+  data = str.encode('<br>\n\n' + content)
 
   dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
 
