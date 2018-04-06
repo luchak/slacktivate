@@ -9,15 +9,13 @@ from slackclient import SlackClient
 
 import db
 
-SLACK_DOMAIN = os.environ['SLACK_DOMAIN']
-
 app = Flask(__name__)
-app.config.from_pyfile('slacktivate.cfg')
+app.config.from_envvar('SLACKTIVATE_CONFIG')
 
 
 # Super hack-ish way to get a URL for a particular message
 def url_for_message(channel, message):
-    return SLACK_DOMAIN + '/archives/' + channel + '/p' + ''.join(message['ts'].split('.'))
+    return app.config['SLACK_DOMAIN'] + '/archives/' + channel + '/p' + ''.join(message['ts'].split('.'))
 
 def get_slack_client():
     return SlackClient(app.config['SLACK_TOKEN'])
@@ -67,7 +65,7 @@ def handle_twitter(channel, user, message):
 
 def handle_faq(channel, message):
     url = url_for_message(channel, message)
-    append('# ' + url + '\n\n' + message['text'])
+    append(app.config['DROPBOX_ACCESS_TOKEN'], '# ' + url + '\n\n' + message['text'])
     print(url)
 
 def get_message_from_item(message_item):
