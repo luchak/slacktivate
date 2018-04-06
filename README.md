@@ -6,4 +6,11 @@ To get started:
 * `virtualenv -p python3 venv`
 * `source ./venv/bin/activate`
 * `pip install -r requirements.txt`
+* ```
+    cat > slacktivate.cfg << EOF
+    SLACK_TOKEN = "XXXXXX"
+    EOF
+```
 * `./start.sh`
+
+slacktivate.cfg
