@@ -1,5 +1,6 @@
 from flask import Flask, Response, request
 import json
+import logging
 import requests
 from slackclient import SlackClient
 
@@ -34,8 +35,6 @@ def hello_world():
 
 @app.route('/event', methods=['POST'])
 def handle_event():
-    print('CONFIG')
-    print(app.config)
     event = request.json
     if event['type'] == 'url_verification':
         return Response(event['challenge'], mimetype='text/plain')
@@ -43,13 +42,11 @@ def handle_event():
         inner_event = event['event']
         if inner_event['type'] == 'reaction_added':
             message = get_message_from_item(inner_event['item'])
-            print('reaction message text: {}'.format(message['text']))
+            logging.info('reaction message text: {}'.format(message['text']))
             return ''
         else:
-            print('Unknown inner event type:')
-            print(inner_event)
+            logging.warn('Unknown inner event type:', inner_event['type'])
             return ''
     else:
-        print('Unknown outer event type:')
-        print(event)
+        logging.warn('Unknown outer event type:', event['type'])
         return ''
