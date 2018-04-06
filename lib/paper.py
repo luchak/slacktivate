@@ -3,7 +3,6 @@ import dropbox
 
 DROPBOX_ACCESS_TOKEN = os.environ['DROPBOX_ACCESS_TOKEN']
 DOC_ID = '1NRlljWSK3U6GaIZ7er5j'
-DOC_TITLE = 'South Park Commons FAQ'
 
 APPEND_POLICY = dropbox.paper.PaperDocUpdatePolicy('append')
 EXPORT_FORMAT = dropbox.paper.ExportFormat('markdown')
@@ -23,11 +22,6 @@ def append(title, body):
   # The response body is not consumed, so call close() on the response object
   # otherwise we will max out the available connections.
   res.close()
-
-  # Abort if the selected document does not have the expected title otherwise we may
-  # write data into the wrong document.
-  if (doc.title != DOC_TITLE):
-    raise LookupError('Unexpected title: ' + doc.title + ' Expected: ' + DOC_TITLE)
 
   # Append data to the Paper document
   dbx.paper_docs_update(data, DOC_ID, APPEND_POLICY, doc.revision, IMPORT_FORMAT)
