@@ -57,6 +57,11 @@ def handle_twitter(channel, user, message):
                     "type": "button",
                     "text": "Compose tweet :twitter:",
                     "url": tweet_intent_url
+                },
+                {
+                    "type": "button",
+                    "text": "View source :slack:",
+                    "url": url_for_message(channel, message)
                 }
             ]
         }
@@ -65,15 +70,15 @@ def handle_twitter(channel, user, message):
         'chat.postMessage',
         channel='tweetdrafts',
         as_user=False,
-        text='Got a tweet suggestion from {} in {}: \"{}\"'.format(
+        text='Got a tweet suggestion by {} on {}\'s post in {}: \"{}\"'.format(
             '<@{}>'.format(user),
+            '<@{}>'.format(message['user']),
             '<#{}>'.format(channel),
             message['text']),
         attachments=tweet_button_action
     )
 
 def handle_faq(channel, user, message):
-    #message_text = decode_slack_encoding(message['text'])
     url = url_for_message(channel, message)
     append(app.config['DROPBOX_ACCESS_TOKEN'], '# ' + url + '\n\n' + message['text'])
     print(url)
