@@ -7,14 +7,34 @@ from slackclient import SlackClient
 app = Flask(__name__)
 app.config.from_pyfile('slacktivate.cfg')
 
+def get_slack_client():
+    return SlackClient(app.config['SLACK_TOKEN'])
+
+def handle_twitter(channel, message):
+    result = get_slack_client().api_call(
+        'chat.postMessage',
+        channel=channel,
+        as_user=False,
+        text='Got a tweet suggestion: {}'.format(message['text'])
+    )
+    print(result)
+
+def handle_faq(channel, message):
+    result = get_slack_client().api_call(
+        'chat.postMessage',
+        channel=channel,
+        as_user=False,
+        text='Got a FAQ suggestion: {}'.format(message['text'])
+    )
+    print(result)
+
 def get_message_from_item(message_item):
     if message_item['type'] != 'message':
         raise ValueError('Cannot fetch non-message item')
 
     timestamp = float(message_item['ts'])
 
-    sc = SlackClient(app.config['SLACK_TOKEN'])
-    history = sc.api_call(
+    history = get_slack_client().api_call(
         'channels.history',
         channel=message_item['channel'],
         count=10,
@@ -29,6 +49,12 @@ def get_message_from_item(message_item):
     return None
 
 
+EMOJI_ROUTES = {
+    'twitter': handle_twitter,
+    'faq': handle_faq,
+}
+
+
 @app.route('/')
 def hello_world():
     return 'Hello, Matt!'
@@ -41,8 +67,12 @@ def handle_event():
     elif event['type'] == 'event_callback':
         inner_event = event['event']
         if inner_event['type'] == 'reaction_added':
-            message = get_message_from_item(inner_event['item'])
-            logging.info('reaction message text: {}'.format(message['text']))
+            route = EMOJI_ROUTES.get(inner_event['reaction'])
+            if route:
+                message = get_message_from_item(inner_event['item'])
+                route(inner_event['item']['channel'], message)
+            else:
+                logging.info('Unknown emoji:', inner_event['reaction'])
             return ''
         else:
             logging.warn('Unknown inner event type:', inner_event['type'])
