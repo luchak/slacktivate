@@ -2,9 +2,7 @@ from flask import Flask, Response, request
 import json
 import logging
 import requests
-from urllib.parse import urlencode, quote_plus
 import sqlite3
-
 from slackclient import SlackClient
 
 import db
@@ -12,10 +10,12 @@ import db
 app = Flask(__name__)
 app.config.from_pyfile('slacktivate.cfg')
 
+
 def get_slack_client():
     return SlackClient(app.config['SLACK_TOKEN'])
 
-def handle_twitter(channel, message):
+
+def handle_twitter(channel, user, message):
     tweet_intent_url = 'https://twitter.com/intent/tweet?text={}'.format(message['text']);
     tweet_button_action = json.dumps([
         {
@@ -34,20 +34,22 @@ def handle_twitter(channel, message):
         channel='tweetdrafts',
         as_user=False,
         text='Got a tweet suggestion from @{} in #{}: \"{}\"'.format(
-            'cchio',
+            user,
             channel,
             message['text']),
         attachments=tweet_button_action
     )
     payload = {'text': message['text']}
 
-def handle_faq(channel, message):
+
+def handle_faq(channel, user, message):
     result = get_slack_client().api_call(
         'chat.postMessage',
         channel=channel,
         as_user=False,
         text='Got a FAQ suggestion: {}'.format(message['text'])
     )
+
 
 def get_message_from_item(message_item):
     if message_item['type'] != 'message':
@@ -80,6 +82,7 @@ EMOJI_ROUTES = {
 def hello_world():
     return 'Hello, Matt!'
 
+
 @app.route('/event', methods=['POST'])
 def handle_event():
     event = request.json
@@ -94,7 +97,9 @@ def handle_event():
                 conn = db.Connection()
                 if not conn.has_run(inner_event):
                     message = get_message_from_item(inner_event['item'])
-                    route(inner_event['item']['channel'], message)
+                    user = inner_event['user']
+                    channel = inner_event['item']['channel']
+                    route(channel, user, message)
                     conn.mark_run(inner_event)
             else:
                 logging.info('Unknown emoji:', inner_event['reaction'])
