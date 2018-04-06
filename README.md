@@ -11,6 +11,7 @@ To get started:
     SLACK_TOKEN = "XXXXXX"
     EOF
 ```
+export PORT=5000
 * `./start.sh`
 
 slacktivate.cfg
