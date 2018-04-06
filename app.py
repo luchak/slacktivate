@@ -4,9 +4,7 @@ import json
 import logging
 import os
 import requests
-from urllib.parse import urlencode, quote_plus
 import sqlite3
-
 from slackclient import SlackClient
 
 import db
@@ -24,7 +22,8 @@ def url_for_message(channel, message):
 def get_slack_client():
     return SlackClient(app.config['SLACK_TOKEN'])
 
-def handle_twitter(channel, message):
+
+def handle_twitter(channel, user, message):
     tweet_intent_url = 'https://twitter.com/intent/tweet?text={}'.format(message['text']);
     tweet_button_action = json.dumps([
         {
@@ -43,7 +42,7 @@ def handle_twitter(channel, message):
         channel='tweetdrafts',
         as_user=False,
         text='Got a tweet suggestion from @{} in #{}: \"{}\"'.format(
-            'cchio',
+            user,
             channel,
             message['text']),
         attachments=tweet_button_action
@@ -86,6 +85,7 @@ EMOJI_ROUTES = {
 def hello_world():
     return 'Hello, Matt!'
 
+
 @app.route('/event', methods=['POST'])
 def handle_event():
     event = request.json
@@ -100,7 +100,9 @@ def handle_event():
                 conn = db.Connection()
                 if not conn.has_run(inner_event):
                     message = get_message_from_item(inner_event['item'])
-                    route(inner_event['item']['channel'], message)
+                    user = inner_event['user']
+                    channel = inner_event['item']['channel']
+                    route(channel, user, message)
                     conn.mark_run(inner_event)
             else:
                 logging.info('Unknown emoji:', inner_event['reaction'])
