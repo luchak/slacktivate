@@ -3,7 +3,11 @@ import json
 import logging
 import requests
 from urllib.parse import urlencode, quote_plus
+import sqlite3
+
 from slackclient import SlackClient
+
+import db
 
 app = Flask(__name__)
 app.config.from_pyfile('slacktivate.cfg')
@@ -56,7 +60,7 @@ def get_message_from_item(message_item):
         channel=message_item['channel'],
         count=10,
         latest=timestamp + 1,
-        oldest=timestamp -1,
+        oldest=timestamp - 1,
     )
 
     for message in history['messages']:
@@ -87,13 +91,15 @@ def handle_event():
             route = EMOJI_ROUTES.get(inner_event['reaction'])
             if route:
                 message = get_message_from_item(inner_event['item'])
-                route(inner_event['item']['channel'], message)
+                conn = db.Connection()
+                if not conn.has_run(inner_event):
+                    message = get_message_from_item(inner_event['item'])
+                    route(inner_event['item']['channel'], message)
+                    conn.mark_run(inner_event)
             else:
                 logging.info('Unknown emoji:', inner_event['reaction'])
-            return ''
         else:
             logging.warn('Unknown inner event type:', inner_event['type'])
-            return ''
     else:
         logging.warn('Unknown outer event type:', event['type'])
-        return ''
+    return ''
