@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello_world():
-    return 'Hello, World!'
+    return 'Hello, Matt!'
 
 @app.route('/event', methods=['POST'])
 def handle_event():
