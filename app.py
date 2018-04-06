@@ -15,4 +15,4 @@ def handle_event():
         return Response(event['challenge'], mimetype='text/plain')
     else:
         print(event)
-        return None
+        return ''
